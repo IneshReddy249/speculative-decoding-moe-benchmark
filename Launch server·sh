@@ -1,0 +1,105 @@
+#!/bin/bash
+# =============================================================================
+# launch_server.sh — Launch SGLang server with different speculation configs
+# GLM-4.7-Flash (30B MoE) on H100 PCIe
+# =============================================================================
+
+set -euo pipefail
+
+MODEL_PATH="${MODEL_PATH:-/home/shadeform/models/GLM-4.7-Flash}"
+DRAFT_PATH="${DRAFT_PATH:-/home/shadeform/models/GLM-4.7-Flash-Eagle3}"
+
+usage() {
+    echo "Usage: $0 {baseline|mtp-v1|mtp-v2|eagle3-v1|eagle3-v2|eagle3-v3}"
+    echo ""
+    echo "Configs:"
+    echo "  baseline   — No speculation (port 30000)"
+    echo "  mtp-v1     — MTP steps=3, topk=1, tokens=4 (port 30001)"
+    echo "  mtp-v2     — MTP steps=1, topk=1, tokens=2 + SpecV2 (port 30001)"
+    echo "  eagle3-v1  — EAGLE3 steps=3, topk=4, tokens=6 (port 30002)"
+    echo "  eagle3-v2  — EAGLE3 steps=5, topk=8, tokens=16 (port 30002)"
+    echo "  eagle3-v3  — EAGLE3 steps=3, topk=1, tokens=4 + SpecV2 (port 30002)"
+    exit 1
+}
+
+case "${1:-}" in
+    baseline)
+        echo ">>> Launching Baseline on port 30000"
+        python3 -m sglang.launch_server \
+            --model-path "$MODEL_PATH" \
+            --tp 1 --trust-remote-code \
+            --mem-fraction-static 0.85 \
+            --port 30000
+        ;;
+
+    mtp-v1)
+        echo ">>> Launching MTP-v1 on port 30001"
+        python3 -m sglang.launch_server \
+            --model-path "$MODEL_PATH" \
+            --speculative-algorithm EAGLE \
+            --speculative-num-steps 3 \
+            --speculative-eagle-topk 1 \
+            --speculative-num-draft-tokens 4 \
+            --tp 1 --trust-remote-code \
+            --mem-fraction-static 0.80 \
+            --port 30001
+        ;;
+
+    mtp-v2)
+        echo ">>> Launching MTP-v2 (SpecV2) on port 30001"
+        SGLANG_ENABLE_SPEC_V2=True python3 -m sglang.launch_server \
+            --model-path "$MODEL_PATH" \
+            --speculative-algorithm EAGLE \
+            --speculative-num-steps 1 \
+            --speculative-eagle-topk 1 \
+            --speculative-num-draft-tokens 2 \
+            --tp 1 --trust-remote-code \
+            --mem-fraction-static 0.80 \
+            --port 30001
+        ;;
+
+    eagle3-v1)
+        echo ">>> Launching EAGLE3-v1 on port 30002"
+        SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN=1 python3 -m sglang.launch_server \
+            --model-path "$MODEL_PATH" \
+            --speculative-algorithm EAGLE3 \
+            --speculative-draft-model-path "$DRAFT_PATH" \
+            --speculative-num-steps 3 \
+            --speculative-num-draft-tokens 6 \
+            --speculative-eagle-topk 4 \
+            --tp 1 --trust-remote-code \
+            --mem-fraction-static 0.80 \
+            --port 30002
+        ;;
+
+    eagle3-v2)
+        echo ">>> Launching EAGLE3-v2 (big tree) on port 30002"
+        SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN=1 python3 -m sglang.launch_server \
+            --model-path "$MODEL_PATH" \
+            --speculative-algorithm EAGLE3 \
+            --speculative-draft-model-path "$DRAFT_PATH" \
+            --speculative-num-steps 5 \
+            --speculative-num-draft-tokens 16 \
+            --speculative-eagle-topk 8 \
+            --tp 1 --trust-remote-code \
+            --mem-fraction-static 0.80 \
+            --port 30002
+        ;;
+
+    eagle3-v3)
+        echo ">>> Launching EAGLE3-v3 (SpecV2) on port 30002"
+        SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN=1 SGLANG_ENABLE_SPEC_V2=True \
+        python3 -m sglang.launch_server \
+            --model-path "$MODEL_PATH" \
+            --speculative-algorithm EAGLE3 \
+            --speculative-draft-model-path "$DRAFT_PATH" \
+            --speculative-num-steps 3 \
+            --speculative-num-draft-tokens 4 \
+            --speculative-eagle-topk 1 \
+            --tp 1 --trust-remote-code \
+            --mem-fraction-static 0.80 \
+            --port 30002
+        ;;
+
+    *)  usage ;;
+esac
