@@ -1,0 +1,36 @@
+<div style="padding: 1rem 0;">
+<div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; font-size: 12px; color: var(--color-text-secondary);">
+  <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #73726c;"></span>Baseline</span>
+  <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #3266ad;"></span>MTP + SpecV2</span>
+  <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #c0392b;"></span>EAGLE3 + SpecV2</span>
+</div>
+<div style="position: relative; width: 100%; height: 320px;">
+  <canvas id="tpotChart" role="img" aria-label="Line chart comparing per-token output latency across concurrency levels">TPOT comparison.</canvas>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+new Chart(document.getElementById('tpotChart'), {
+  type: 'line',
+  data: {
+    labels: ['1', '4', '8', '16', '32'],
+    datasets: [
+      { label: 'Baseline', data: [9.68, 14.65, 19.47, 25.38, 30.95], borderColor: '#73726c', borderWidth: 2, pointRadius: 5, pointBackgroundColor: '#73726c', borderDash: [6, 3], tension: 0.3, fill: false },
+      { label: 'MTP + SpecV2', data: [7.28, 12.24, 16.15, 21.06, 23.47], borderColor: '#3266ad', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#3266ad', tension: 0.3, fill: false },
+      { label: 'EAGLE3 + SpecV2', data: [7.05, 12.43, 15.84, 19.40, 25.07], borderColor: '#c0392b', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#c0392b', tension: 0.3, fill: false }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y.toFixed(2) + ' ms'; } } }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Concurrency', font: { size: 13 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
+      y: { title: { display: true, text: 'Mean TPOT (ms) — lower is better', font: { size: 13 } }, grid: { color: 'rgba(128,128,128,0.1)' }, min: 0, max: 35 }
+    }
+  }
+});
+</script>

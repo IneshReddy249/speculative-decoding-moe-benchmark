@@ -1,0 +1,37 @@
+<div style="padding: 1rem 0;">
+<div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; font-size: 12px; color: var(--color-text-secondary);">
+  <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #73726c;"></span>Baseline</span>
+  <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #3266ad;"></span>MTP + SpecV2</span>
+  <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #c0392b;"></span>EAGLE3 + SpecV2</span>
+</div>
+<div style="position: relative; width: 100%; height: 360px;">
+  <canvas id="throughputChart" role="img" aria-label="Line chart comparing output throughput of Baseline, MTP with SpecV2, and EAGLE3 with SpecV2 across concurrency levels 1 to 32">Throughput comparison across concurrency levels.</canvas>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const ctx = document.getElementById('throughputChart');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['1', '4', '8', '16', '32'],
+    datasets: [
+      { label: 'Baseline', data: [100.8, 271.5, 408.7, 626.5, 979.6], borderColor: '#73726c', backgroundColor: 'rgba(115,114,108,0.08)', borderWidth: 2, pointRadius: 5, pointBackgroundColor: '#73726c', borderDash: [6, 3], tension: 0.3, fill: false },
+      { label: 'MTP + SpecV2', data: [131.4, 315.2, 474.8, 723.1, 1255.0], borderColor: '#3266ad', backgroundColor: 'rgba(50,102,173,0.08)', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#3266ad', tension: 0.3, fill: false },
+      { label: 'EAGLE3 + SpecV2', data: [135.1, 308.9, 483.1, 740.3, 1090.3], borderColor: '#c0392b', backgroundColor: 'rgba(192,57,43,0.08)', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#c0392b', tension: 0.3, fill: false }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y.toFixed(1) + ' tok/s'; } } }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Concurrency', font: { size: 13 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
+      y: { title: { display: true, text: 'Output throughput (tok/s)', font: { size: 13 } }, grid: { color: 'rgba(128,128,128,0.1)' }, min: 0, max: 1400 }
+    }
+  }
+});
+</script>

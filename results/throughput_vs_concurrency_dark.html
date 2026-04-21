@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body { margin: 0; padding: 24px; background: #0a0a0a; font-family: -apple-system, sans-serif; }
+.legend { display: flex; gap: 20px; margin-bottom: 16px; font-size: 13px; color: #aaa; }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.legend .dot { width: 12px; height: 12px; border-radius: 2px; }
+.wrap { position: relative; width: 100%; max-width: 800px; height: 420px; margin: 0 auto; }
+</style>
+</head>
+<body>
+<div style="max-width: 800px; margin: 0 auto;">
+<div class="legend">
+  <span><span class="dot" style="background:#73726c"></span>Baseline</span>
+  <span><span class="dot" style="background:#3266ad"></span>MTP + SpecV2</span>
+  <span><span class="dot" style="background:#c0392b"></span>EAGLE3 + SpecV2</span>
+</div>
+<div class="wrap">
+  <canvas id="chart"></canvas>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+new Chart(document.getElementById('chart'), {
+  type: 'line',
+  data: {
+    labels: ['1', '4', '8', '16', '32'],
+    datasets: [
+      { label: 'Baseline', data: [100.8, 271.5, 408.7, 626.5, 979.6], borderColor: '#73726c', borderWidth: 2, pointRadius: 6, pointBackgroundColor: '#73726c', borderDash: [6, 3], tension: 0.3, fill: false },
+      { label: 'MTP + SpecV2', data: [131.4, 315.2, 474.8, 723.1, 1255.0], borderColor: '#3266ad', borderWidth: 2.5, pointRadius: 6, pointBackgroundColor: '#3266ad', tension: 0.3, fill: false },
+      { label: 'EAGLE3 + SpecV2', data: [135.1, 308.9, 483.1, 740.3, 1090.3], borderColor: '#c0392b', borderWidth: 2.5, pointRadius: 6, pointBackgroundColor: '#c0392b', tension: 0.3, fill: false }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      title: { display: true, text: 'GLM-4.7-Flash (30B MoE, H100 PCIe) — Throughput vs Concurrency', color: '#ccc', font: { size: 15, weight: '500' }, padding: { bottom: 16 } },
+      tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y.toFixed(1) + ' tok/s'; } } }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Concurrency', color: '#888', font: { size: 13 } }, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#888' } },
+      y: { title: { display: true, text: 'Output throughput (tok/s)', color: '#888', font: { size: 13 } }, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#888' }, min: 0, max: 1400 }
+    }
+  }
+});
+</script>
+</body>
+</html>
